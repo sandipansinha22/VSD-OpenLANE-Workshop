@@ -1,1 +1,1 @@
-# VSD-Openlane-Workshop
+# VSD OpenLANE Workshop

@@ -39,7 +39,7 @@ To invoke OpenLANE, the command `./flow.tcl` was used inside the OpenLANE direct
 
 - The command `package require openlane 0.9` was used to import all the packages to run OpenLANE.
 - `prep -design <design_name>` is used to make file structure for our design.
-   Besides,this command merges the cell LEF and technology LEF information as "merge.lef".
+   Besides,this command merges the cell LEF and technology LEF information as "merged.lef".
     - Cell LEF: contains information of each standard cell.
     - Tech LEF: contains layer definitons and a set of restricted design rules.
    
@@ -141,11 +141,45 @@ The Evaluation and Legality checks are reported at the end.
 
 ![Placement_reports](https://user-images.githubusercontent.com/53702961/106361021-a956e380-6341-11eb-8c30-e9c5ced761d2.png)
 
+
+
 > Note: Placement is an iterative process, the `OVFL`(overflow) must converge to 0 in the end in order for placement to be successful.
 
 - Output of Placement Stage: A DEF (Design Exchange Format) file `picorv32a.placement.def`.
 
 ![Placement_def](https://user-images.githubusercontent.com/53702961/106361155-66494000-6342-11eb-9679-fff3b1fae467.png)
+
+### Viewing Placement in Magic
+
+For viewing Placement on Magic Layout Tool, 3 files are needed as inputs:-
+
+1. Magic technology file (`sky130A.tech`)
+2. DEF file of Placement (`picorv32a.placement.def`)
+3. Merged LEF file (`merged.lef`)
+
+Inside the `results/placement` directory (containing `picorv32a.placement.def`), run the following command:
+
+![Placement_magic](https://user-images.githubusercontent.com/53702961/106361800-86c6c980-6345-11eb-9d01-1664dbdbc635.png)
+
+The post-Placement Layout:
+![Placement_layout](https://user-images.githubusercontent.com/53702961/106361971-41ef6280-6346-11eb-9d0b-0f471e854148.png)
+
+### Standard Cell Characterization
+
+Standard Cell Libraries consist of cells with different functionality/drive strengths. These cells need to be characterized by liberty files to be used by synthesis tools to determine optimal circuit arrangement. The open-source software GUNA is used for characterization.
+
+#### Cell Design Flow
+
+The three stages of Standard cell design flow are:-
+- Inputs: PDKs, DRC & LVS rules, SPICE models, Library and User-defined specifications.
+- Design: Circuit Design, Layout Design, Standard cell Characterization (performed by GUNA). Types of characterization includes Timing characterization, Power characterization and Noise characterization.
+- Outputs: CDL (Circuit Description Language), GDSII, LEF, extracted Spice netlist (.cir).
+
+
+
+
+
+
 
 
 

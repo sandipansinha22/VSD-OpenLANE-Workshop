@@ -57,6 +57,10 @@ Inside `openlane/designs/picorv32a` directory there are two distinct components:
 - `src` directory: contains verilog(`.v`) files and `.sdc` constraint files.
 - `config.tcl` files: design specific configuration switches used by OpenLANE.
 
+To make changes in the `config.tcl` file from OpenLANE, the `-overwrite` flag is used(shown below). However, this usually cleans everything preceding it, which is why there is emphasis laid on using the set keyword for making changes.
+
+![overwrite](https://user-images.githubusercontent.com/53702961/106359379-7fe58a00-6338-11eb-8fb6-59acbed5e4f1.png)
+
 ### Synthesis
 
 To run synthesis and generate the netlist we used the command `run_synthesis`.
@@ -68,5 +72,80 @@ The initial report of the synthesized netlist are as follows(can be obtained fro
 > Note: Inside the timing report the WNS(worst negative slack) must not be a negative number as it indicates a timing violation(example given below).
 
 > ![wns_neg](https://user-images.githubusercontent.com/53702961/106339463-a82fa300-62bc-11eb-9727-81ae7906bd65.png)
+
+## Day 2:- Floorplanning & Placement
+
+The following things are taken care of during the Floorplanning stage:-
+- Defining the Core & Die Area.
+- Defining the Utilization Factor and the Aspect Ratio.
+- Placement of Macros & IO pins.
+- Power Distribution Network (Normally done in Floorplan stage but done later in the OpenLANE flow)
+ 	
+#### Utilization Factor and Aspect Ratio
+The amount of core area occupied by the netlist (Standard cells) is known as Utilization Factor. Generally, it is kept in the range of 0.5-0.7 or 50-70%. This allows for optimization of placement and realizable routing of a system. Aspect ratio is the ratio of the Height and the Width of the core area. An aspect ratio of 1 discribes the chip as a square.
+
+#### Preplaced Cells
+Preplaced cells or MACROs or IPs are used in our designs(eg: Memories,PLL,etc.).The locations and blockages for preplaced cells are defined in the Floorplanning stage itself to ensure no standard cells are mapped where the those cells are located.
+
+#### Decoupling Capacitors
+Decoupling capacitors are placed local to preplaced cells during Floorplanning. Voltage drops associated with interconnect wires can heavily affect our noise margin or put it into an indeterminate state. Decoupling capacitor is a big capacitor located next to the macros to fix this problem. The capacitor will charge up to the power supply voltage over time and it will work as a charge reservoir when a transition is needed by the circuit instead of the charge coming from the power supply. Therefore it “decouples” the circuit from the main supply. The capacitor acts like the power supply.
+
+#### Power Planning
+Power planning during the Floorplanning phase is essential to lower noise in digital circuits attributed to voltage droop and ground bounce. Coupling capacitance is formed between interconnect wires and the substrate which needs to be charged or discharged to represent either logic 1 or logic 0. When a transition occurs on a net, charge associated with coupling capacitors may be dumped to ground. If there are not enough ground taps charge will accumulate at the tap and the ground line will act like a large resistor, raising the ground voltage and lowering our noise margin. To bypass this problem a robust PDN with many power strap taps are needed to lower the resistance associated with the PDN.
+
+#### Pin Placement
+Pin placement is an essential part of floorplanning to minimize buffering and improve power consumption and timing delays. The goal of pin placement is to use the connectivity information of the HDL netlist to determine where along the I/O ring a specific pin should be placed. In many cases, optimal pin placement will be accompanied with less buffering and therefore less power consumption. After pin placement is formed we need to place logical cell blockages along the I/O ring to discriminate between the core area and I/O area.
+
+> Notes:- 
+> - To check clock period, the command used was: `echo ::$env(CLOCK_PERIOD)`.
+> - To change clock period to 12ns(say), the command used was: `set ::env(CLOCK_PERIOD) 12` .
+> - Precedence order: `sky130A_sky130_fd_sc_hd.cofig.tcl` > `config.tcl` > `floorplan.tcl`.
+
+### Floorplan
+
+To execute Floorplan in OpenLANE, the command `run_floorplan` was used.
+
+![fplan_done](https://user-images.githubusercontent.com/53702961/106359702-50d01800-633a-11eb-9da8-c9c45653e3c4.png)
+
+- Output of Floorplan Stage: A DEF (Design Exchange Format) file `picorv32a.floorplan.def`, containing information about core area, placement of Standard Cell SITES,etc.
+
+### Viewing Floorplan in Magic
+
+For viewing Floorplan on Magic Layout Tool, 3 files are needed as inputs:-
+
+1. Magic technology file (`sky130A.tech`)
+2. DEF file of floorplan (`picorv32a.floorplan.def`)
+3. Merged LEF file (`merged.lef`)
+
+Inside the `results/floorplan` directory (containing `picorv32a.floorplan.def`), run the following command: 
+
+![fplan_magic](https://user-images.githubusercontent.com/53702961/106360095-a1e10b80-633c-11eb-8ac3-f327719c81a9.png)
+
+![fplan_layout](https://user-images.githubusercontent.com/53702961/106360233-5b3fe100-633d-11eb-87fe-535bb519280f.png)
+
+An area was selected by making a box with left & right mouse clicks and pressed `z` to Zoom-IN that area to locate the pins(placed equidistantly from each other) of the die. The DeCAPs and Tap Cells(small rectangles right side of the picture) were also spotted.
+
+![fplan_pins](https://user-images.githubusercontent.com/53702961/106360421-59c2e880-633e-11eb-95d5-b0fce17717d4.png)
+
+### Placement
+
+With both the Floorplan and Synthesized netlist being ready, the next step in ASIC flow is Standard cell placement.
+OpenLANE does placement in two stages:
+
+1. Global Placement: Optimized but not legal placement. Optimization works to reduce wirelength by reducing half parameter wirelength (HPWL). It is not a legal placement as there might be instance of standard cells getting overlapped.
+2. Detailed Placement: Legalizes placement of cells into standard cell rows while adhering to Global Placement.
+
+Command used for Placement is: `run_placement`
+
+The Evaluation and Legality checks are reported at the end.
+
+![Placement_reports](https://user-images.githubusercontent.com/53702961/106361021-a956e380-6341-11eb-8c30-e9c5ced761d2.png)
+
+> Note: Placement is an iterative process, the `OVFL`(overflow) must converge to 0 in the end in order for placement to be successful.
+
+- Output of Placement Stage: A DEF (Design Exchange Format) file `picorv32a.placement.def`.
+
+![Placement_def](https://user-images.githubusercontent.com/53702961/106361155-66494000-6342-11eb-9679-fff3b1fae467.png)
+
 
 

@@ -247,6 +247,7 @@ The plot was used to compute the 4 parameters which intricately define the inver
 - Propagation Delay(Falling): The time difference between the points where the input and output are at 50% of their magnitude when the signal falls from max value to 0V.
 
 All the parameters are calculated respectively from the results obtained below (where x0 indicates time(in seconds) and y0 indicates signal value(in V)):- 
+
 ![ng_charact](https://user-images.githubusercontent.com/53702961/106369773-29993b00-637a-11eb-8f4e-52fcacb7fad9.png)
 
 ## Day 4:- Pre-Layout Timing Analysis & Clock Tree Synthesis
@@ -366,7 +367,8 @@ Running `sta pre_sta.conf` gives a table of data that communicates the necessary
 
 ![synth_strat](https://user-images.githubusercontent.com/53702961/106371478-d1b70000-638a-11eb-85c1-d0e1444f451e.png)
 
-We changed the value of `SYNTH_STRATEGY` from 0 to 1.
+The value of `SYNTH_STRATEGY`, `SYNTH_BUFFERING`, `SYNTH_STRATEGY` were kept as 1.
+`SYNTH_DRIVING_CELL` was updated to `sky130_fd_sc_hc__inv_8` (Upsized)
 
 #### Strategy 2: Upsizing the Buffers
 
@@ -466,7 +468,8 @@ Once the routing is completed, the interconnect parasitics are extracted to perf
 
 Inside the `Desktop/work/tools/SPEF_EXTRACTOR` directory we need to run the python file named `main.py` for SPEF extractions.
 
-The command used was: `python3 main.py /designs/picorv32a/runs/trial_run1/tmp/merged.lef /designs/picorv32a/runs/trial_run1/results/routing/picorv32a.def`
+The command used was:-
+`python3 main.py /designs/picorv32a/runs/trial_run1/tmp/merged.lef /designs/picorv32a/runs/trial_run1/results/routing/picorv32a.def`
 
 ![r2](https://user-images.githubusercontent.com/53702961/106372623-6f183100-6397-11eb-917a-d6e3f2100bcf.png)
 
